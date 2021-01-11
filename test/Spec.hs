@@ -29,7 +29,7 @@ data Case = Case { description :: String
 cases :: [Case]
 cases = [ Case {description="empty string",
           input="",
-          expected=EExn "error"},
+          expected=EExn "(line 1, column 1):\nunexpected end of input\nexpecting \"true\", \"false\" or digit"},
           Case {description="basic numeral",
           input="2",
           expected=ENum 2},

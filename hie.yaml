@@ -6,5 +6,6 @@ cradle:
           stack:
             - path: "./src/Lib.hs"
             - path: "./src/Parse.hs"
+            - path: "./src/Eval.hs"
             - path: "./test/Spec.hs"
             - path: "./app/Main.hs"

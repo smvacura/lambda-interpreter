@@ -29,6 +29,7 @@ library
   exposed-modules:
       Lib
       Parse
+      Eval
   other-modules:
       Paths_first_haskell
   hs-source-dirs:

@@ -1,1 +1,1 @@
-# first-haskell
+# lambda interpreter
