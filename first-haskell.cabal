@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 7e836c624b30e7c53373b378f503d5e1cd5ad3464874f9589e196f3ecb78e243
+-- hash: 1737ca3fd799ec6e9978183d72f9bad0f517080b3e9115fb44a47e04c24187aa
 
 name:           first-haskell
 version:        0.1.0.0
@@ -28,12 +28,15 @@ source-repository head
 library
   exposed-modules:
       Lib
+      Parse
   other-modules:
       Paths_first_haskell
   hs-source-dirs:
       src
   build-depends:
       base >=4.7 && <5
+    , hspec
+    , parsec
   default-language: Haskell2010
 
 executable first-haskell-exe
@@ -46,6 +49,7 @@ executable first-haskell-exe
   build-depends:
       base >=4.7 && <5
     , first-haskell
+    , parsec
   default-language: Haskell2010
 
 test-suite first-haskell-test
@@ -59,4 +63,6 @@ test-suite first-haskell-test
   build-depends:
       base >=4.7 && <5
     , first-haskell
+    , hspec
+    , parsec
   default-language: Haskell2010
