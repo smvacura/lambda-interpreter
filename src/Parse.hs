@@ -1,5 +1,6 @@
 module Parse
     ( Expr (..),
+      Oper(..),
       lmbdaParse
     ) where
 
@@ -7,17 +8,21 @@ import Control.Applicative((<*))
 import Text.Parsec
 import Text.Parsec.String
 import Text.Parsec.Expr
-import Text.Parsec.Token
+import qualified Text.Parsec.Token as Token
 import Text.Parsec.Language
 import Data.Char
 import Control.Monad
 
+
 data Expr = ENum Integer 
           | EBoolean Bool
           | EExn String
-          | Binop Oper Expr Expr
+          | ArithBinop Oper Expr Expr
+          | BoolBinop Oper Expr Expr
+          | Uuop Oper Expr
           | If Expr Expr Expr
           | Lmbda String Expr
+          | Bound String
     deriving (Eq, Show)
 
 data Oper = Add
@@ -25,6 +30,10 @@ data Oper = Add
            | Mult
            | Div
            | Exp
+           | Neg
+           | And
+           | Or
+           | Not
     deriving (Eq, Show)
 
 safeBoolRead :: String -> Bool
@@ -52,40 +61,67 @@ boolExpr = do
     return $ EBoolean $ safeBoolRead b
 
 
-addOp :: Parser Oper
-addOp = do
-    opChar <- char '+'
-    return Add
-
-subOp :: Parser Oper
-subOp = do
-    opChar <- char '-'
-    return Sub
-
-multOp :: Parser Oper
-multOp = do
-    opChar <- char '*'
-    return Mult
-
-divOp :: Parser Oper
-divOp = do
-    opChar <- char '/'
-    return Div
-    
-binOp :: Parser Oper
-binOp = addOp <|> subOp <|> multOp <|> divOp
-
-binopExpr :: Parser Expr
-binopExpr = do
-    e1 <- litExpr
-    op <- binOp
-    e2 <- litExpr
-    return $ Binop op e1 e2
-
 litExpr :: Parser Expr
-litExpr = boolExpr <|> numExpr
+litExpr = arithExpr <|> boolExpr <|> numExpr
+
 
 lmbdaParse :: String -> Expr
 lmbdaParse input = case parse (whitespace *> litExpr <* eof) "" input of
                      Left err -> EExn $ show err
                      Right expr -> expr 
+
+
+
+languageDef =
+   emptyDef { Token.identStart      = letter,
+              Token.identLetter     = letter,
+              Token.reservedNames   = [ "if",
+                                        "then",
+                                        "true",
+                                        "false",
+                                        "not",
+                                        "and",
+                                        "or",
+                                        "\\"
+                                      ],
+              Token.reservedOpNames = ["+", "-", "*", "/", "=",
+                                       "<", ">", "and", "or", "not"
+                                      ]
+            }
+
+lexer = Token.makeTokenParser languageDef
+
+lidentifier = Token.identifier lexer
+
+lreserved = Token.reserved lexer
+
+lreservedOp = Token.reservedOp lexer
+
+ifExpr :: Parser Expr
+ifExpr = do
+    lreserved "if"
+    cond <- litExpr
+    lreserved "then"
+    e1 <- litExpr
+    lreserved "else"
+    e2 <- litExpr
+    return $ If cond e1 e2
+
+arithExpr :: Parser Expr
+arithExpr = buildExpressionParser arithOps arithTerm
+
+arithTerm :: Parser Expr
+arithTerm = numExpr
+         <|> boolExpr
+         <|> fmap Bound lidentifier
+
+arithOps = [  [Infix  (lreservedOp "*" >> return (ArithBinop Mult)) AssocLeft,
+                Infix  (lreservedOp "/" >> return (ArithBinop Div )) AssocLeft],
+              [Infix (lreservedOp "+" >> return (ArithBinop Add)) AssocLeft,
+               Infix (lreservedOp "-" >> return (ArithBinop Sub)) AssocLeft ]]
+
+bOperators = [ [Infix  (lreservedOp "and" >> return (BoolBinop And     )) AssocLeft,
+                 Infix  (lreservedOp "or"  >> return (BoolBinop Or      )) AssocLeft]
+              ]
+
+            
