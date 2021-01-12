@@ -19,6 +19,7 @@ data Expr = ENum Integer
           | EExn String
           | ArithBinop Oper Expr Expr
           | BoolBinop Oper Expr Expr
+          | CompBinop Oper Expr Expr
           | Uuop Oper Expr
           | If Expr Expr Expr
           | Lmbda String Expr
@@ -34,6 +35,12 @@ data Oper = Add
            | And
            | Or
            | Not
+           | Eq 
+           | NEq
+           | GT
+           | LT
+           | GET
+           | LET
     deriving (Eq, Show)
 
 safeBoolRead :: String -> Bool
@@ -62,7 +69,9 @@ boolExpr = do
 
 
 litExpr :: Parser Expr
-litExpr = arithExpr <|> boolExpr <|> numExpr
+litExpr = arithOpExpr 
+       <|> boolExpr 
+       <|> numExpr
 
 
 lmbdaParse :: String -> Expr
@@ -85,7 +94,8 @@ languageDef =
                                         "\\"
                                       ],
               Token.reservedOpNames = ["+", "-", "*", "/", "=",
-                                       "<", ">", "and", "or", "not"
+                                       "<", ">", "and", "or", "not",
+                                       "&"
                                       ]
             }
 
@@ -107,21 +117,21 @@ ifExpr = do
     e2 <- litExpr
     return $ If cond e1 e2
 
-arithExpr :: Parser Expr
-arithExpr = buildExpressionParser arithOps arithTerm
+arithOpExpr :: Parser Expr
+arithOpExpr = buildExpressionParser arithOps arithTerm
 
 arithTerm :: Parser Expr
 arithTerm = numExpr
          <|> boolExpr
          <|> fmap Bound lidentifier
 
-arithOps = [  [Infix  (lreservedOp "*" >> return (ArithBinop Mult)) AssocLeft,
-                Infix  (lreservedOp "/" >> return (ArithBinop Div )) AssocLeft],
-              [Infix (lreservedOp "+" >> return (ArithBinop Add)) AssocLeft,
-               Infix (lreservedOp "-" >> return (ArithBinop Sub)) AssocLeft ]]
-
-bOperators = [ [Infix  (lreservedOp "and" >> return (BoolBinop And     )) AssocLeft,
-                 Infix  (lreservedOp "or"  >> return (BoolBinop Or      )) AssocLeft]
-              ]
-
+arithOps = [[Infix  (lreservedOp "*" >> return (ArithBinop Mult)) AssocLeft,
+             Infix  (lreservedOp "/" >> return (ArithBinop Div )) AssocLeft],
+            [Infix (lreservedOp "+" >> return (ArithBinop Add)) AssocLeft,
+             Infix (lreservedOp "-" >> return (ArithBinop Sub)) AssocLeft ],
+            [Infix (lreservedOp "=" >> return (CompBinop Eq)) AssocLeft ,
+             Infix (lreservedOp "<" >> return (CompBinop Parse.LT)) AssocLeft,
+             Infix (lreservedOp ">" >> return (CompBinop Parse.GT)) AssocLeft ],
+            [Infix (lreservedOp "and" >> return (BoolBinop And)) AssocLeft,
+             Infix (lreservedOp "or" >> return (BoolBinop Or)) AssocLeft ]]
             
