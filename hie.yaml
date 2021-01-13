@@ -4,7 +4,7 @@ cradle:
       config:
         cradle:
           stack:
-            - path: "./src/Lib.hs"
+            - path: "./src/TypeCheck.hs"
             - path: "./src/Parse.hs"
             - path: "./src/Eval.hs"
             - path: "./test/Spec.hs"

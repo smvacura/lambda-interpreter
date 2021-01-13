@@ -32,7 +32,7 @@ data ExprCase = ExprCase { description :: String,
 parseCases :: [ExprCase]
 parseCases = [ ExprCase {description="empty string",
           input="",
-          expected=EExn "(line 1, column 1):\nunexpected end of input\nexpecting digit, \"true\", \"false\" or identifier"},
+          expected=EExn "(line 1, column 1):\nunexpected end of input\nexpecting \"\\\\\", \"if\", digit, \"true\", \"false\" or identifier"},
           ExprCase {description="basic numeral",
           input="2",
           expected=ENum 2},
@@ -71,7 +71,22 @@ parseCases = [ ExprCase {description="empty string",
           expected=CompBinop Eq (ArithBinop Add (ENum 1) (ENum 2)) (ENum 3)},
           ExprCase {description="all three binop precedence",
           input="1 + 2 = 4 and 1 < 3 + 1",
-          expected=BoolBinop And (CompBinop Eq (ArithBinop Add (ENum 1) (ENum 2)) (ENum 4)) (CompBinop Parse.LT (ENum 1) (ArithBinop Add (ENum 3) (ENum 1)))}
+          expected=BoolBinop And (CompBinop Eq (ArithBinop Add (ENum 1) (ENum 2)) (ENum 4)) (CompBinop Parse.LT (ENum 1) (ArithBinop Add (ENum 3) (ENum 1)))},
+          ExprCase {description="simple if-then-else",
+          input="if 1 then 2 else 3",
+          expected=If (ENum 1) (ENum 2) (ENum 3)},
+          ExprCase {description="if-then-else with complex guard",
+          input="if true or false then 1 else 2",
+          expected=If (BoolBinop Or (EBoolean True) (EBoolean False)) (ENum 1) (ENum 2)},
+          ExprCase {description="if-then-else if",
+          input="if true then 1 else if false or true then 2 else 3",
+          expected=If (EBoolean True) (ENum 1) (If (BoolBinop Or (EBoolean False) (EBoolean True)) (ENum 2) (ENum 3))},
+          ExprCase {description="simple lambda",
+          input="\\x.1",
+          expected=Lambda "x" (ENum 1)},
+          ExprCase {description="lambda with expr",
+          input="\\x.x+1",
+          expected=Lambda "x" (ArithBinop Add (Bound "x") (ENum 1))}
         ] 
 
 
@@ -114,5 +129,14 @@ evalCases = [
     expected=EBoolean True},
     ExprCase {description="bool binop type error",
     input="1 or false",
-    expected=EExn "TypeError: at operator `or` expected Bool but got Int"}
+    expected=EExn "TypeError: at operator `or` expected Bool but got Int"},
+    ExprCase {description="simple if-then-else eval",
+    input="if true then 1 else 2",
+    expected=ENum 1},
+    ExprCase {description="if-then-else complex guard eval",
+    input="if true and false then 3 else 4",
+    expected=ENum 4},
+    ExprCase {description="if-then-else complex e1 e2",
+    input="if true or false then 1 + 4 * 5 else 1 - 2 + 8",
+    expected=ENum 21}
     ]

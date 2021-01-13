@@ -22,8 +22,9 @@ data Expr = ENum Integer
           | CompBinop Oper Expr Expr
           | Uuop Oper Expr
           | If Expr Expr Expr
-          | Lmbda String Expr
+          | Lambda String Expr
           | Bound String
+          | App Expr Expr
     deriving (Eq, Show)
 
 data Oper = Add
@@ -69,7 +70,10 @@ boolExpr = do
 
 
 litExpr :: Parser Expr
-litExpr = arithOpExpr 
+litExpr =  try appExpr
+       <|> try lambdaExpr
+       <|> ifExpr
+       <|> arithOpExpr 
        <|> boolExpr 
        <|> numExpr
 
@@ -91,7 +95,8 @@ languageDef =
                                         "not",
                                         "and",
                                         "or",
-                                        "\\"
+                                        "\\",
+                                        "."
                                       ],
               Token.reservedOpNames = ["+", "-", "*", "/", "=",
                                        "<", ">", "and", "or", "not",
@@ -116,6 +121,21 @@ ifExpr = do
     lreserved "else"
     e2 <- litExpr
     return $ If cond e1 e2
+
+lambdaExpr :: Parser Expr
+lambdaExpr = do
+    char '\\'
+    bound <- lidentifier
+    char '.'
+    e <- litExpr
+    return $ Lambda bound e
+
+
+appExpr :: Parser Expr
+appExpr = do
+    e1 <- lambdaExpr
+    e2 <- litExpr
+    return $ App e1 e2
 
 arithOpExpr :: Parser Expr
 arithOpExpr = buildExpressionParser arithOps arithTerm
