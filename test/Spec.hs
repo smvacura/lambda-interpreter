@@ -13,8 +13,8 @@ import Eval (eval, saturate)
 main :: IO ()
 main = do 
     hspecWith defaultConfig {configFastFail = False} parseSpecs
+    hspecWith defaultConfig {configFastFail = False} satSpecs
     hspecWith defaultConfig {configFastFail = False} evalSpecs
-    hspecWith defaultConfig satSpecs
 
 
 parseSpecs :: Spec
@@ -154,7 +154,10 @@ evalCases = [
     expected=ENum 2},
     ExprCase {description="simple not-saturated lambda",
     input="\\x.\\y.x+y 1",
-    expected=Lambda "x" (ArithBinop Add (Bound "x") (ENum 1))}
+    expected=Lambda "x" (ArithBinop Add (Bound "x") (ENum 1))},
+    ExprCase {description="double curried full-saturated lambda",
+    input="\\x.\\y.x+y 1 2",
+    expected=ENum 3}
     ]
 
 

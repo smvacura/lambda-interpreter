@@ -118,15 +118,15 @@ evalIf e1 e2 e3 = evalIf (eval e1) e2 e3
 --   * @e1@ evaluates to a @Lambda@
 --   * @e2@ evaluates to a literal
 evalApp :: Expr -> Expr -> Expr
-evalApp (Lambda v (App e1 e2)) e3 = evalApp (evalApp e1 e2) e3
+evalApp (Lambda v (App e1 e2)) e3 = evalApp (Lambda v (evalApp e1 e2)) e3
 evalApp lam@(Lambda v e1) e2 = 
     let saturatedLambda = saturate v e2 lam in
         case saturatedLambda of
             Lambda v e3 -> if isSaturated e3 
                            then eval e3 
-                           else saturatedLambda
+                           else e3
             _ -> EExn "Fatal error: impossible condition"
-evalApp e1 e2 = EExn "Error: Tried to apply to a non-function"
+evalApp e1 e2 = App e1 e2
 
 
 
