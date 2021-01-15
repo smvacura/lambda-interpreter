@@ -8,12 +8,12 @@ cabal-version: 1.12
 
 name:           first-haskell
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/first-haskell#readme>
-homepage:       https://github.com/githubuser/first-haskell#readme
+description:    Please see the README on GitHub at <https://github.com/smvacura/lambda-interpreter>
+homepage:       https://github.com/smvacura/lambda-interpreter#readme
 bug-reports:    https://github.com/githubuser/first-haskell/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2020 Author name here
+author:         Samuel Vacura
+maintainer:     na
+copyright:      na
 license:        BSD3
 license-file:   LICENSE
 build-type:     Simple
