@@ -7,13 +7,14 @@ import Test.Hspec        (Spec, describe, it, shouldBe)
 import Test.Hspec.Runner (configFastFail, defaultConfig, hspecWith)
 
 import Parse (lmbdaParse, Expr(..), Oper(..))
-import Eval (eval)
+import Eval (eval, saturate)
 
 
 main :: IO ()
 main = do 
     hspecWith defaultConfig {configFastFail = False} parseSpecs
     hspecWith defaultConfig {configFastFail = False} evalSpecs
+    hspecWith defaultConfig satSpecs
 
 
 parseSpecs :: Spec
@@ -86,7 +87,16 @@ parseCases = [ ExprCase {description="empty string",
           expected=Lambda "x" (ENum 1)},
           ExprCase {description="lambda with expr",
           input="\\x.x+1",
-          expected=Lambda "x" (ArithBinop Add (Bound "x") (ENum 1))}
+          expected=Lambda "x" (ArithBinop Add (Bound "x") (ENum 1))},
+          ExprCase {description="double lambda",
+          input="\\x.\\y.x + y",
+          expected=Lambda "x" (Lambda "y" (ArithBinop Add (Bound "x") (Bound "y")))},
+          ExprCase {description="lambda application single",
+          input="\\x.x + 1 2",
+          expected=App (Lambda "x" (ArithBinop Add (Bound "x") (ENum 1))) (ENum 2)},
+          ExprCase {description="double application",
+          input="\\x.\\y.x + y 1 2",
+          expected=App (Lambda "x" (App (Lambda "y" (ArithBinop Add (Bound "x") (Bound "y"))) (ENum 1))) (ENum 2)}
         ] 
 
 
@@ -138,5 +148,57 @@ evalCases = [
     expected=ENum 4},
     ExprCase {description="if-then-else complex e1 e2",
     input="if true or false then 1 + 4 * 5 else 1 - 2 + 8",
-    expected=ENum 21}
+    expected=ENum 21},
+    ExprCase {description="simple fully-saturated lambda",
+    input="\\x.x+1 1",
+    expected=ENum 2},
+    ExprCase {description="simple not-saturated lambda",
+    input="\\x.\\y.x+y 1",
+    expected=Lambda "x" (ArithBinop Add (Bound "x") (ENum 1))}
+    ]
+
+
+satSpecs :: Spec
+satSpecs = describe "Eval.saturate" $ for_ satCases test
+    where
+
+        test SatCase{..} = it satDescription assertion
+            where
+                assertion = saturate inputVar inputSub inputExpr `shouldBe` satExpected
+
+data SatCase = SatCase {
+                satDescription :: String,
+                inputVar :: String,
+                inputSub :: Expr,
+                inputExpr :: Expr,
+                satExpected :: Expr
+}
+
+satCases :: [SatCase]
+satCases = [
+    SatCase { satDescription="int literal no substitution",
+    inputVar="x",
+    inputSub=EBoolean True,
+    inputExpr=ENum 2,
+    satExpected=ENum 2},
+    SatCase { satDescription="bool literal no substitution",
+    inputVar="x",
+    inputSub=ENum 1,
+    inputExpr=EBoolean True,
+    satExpected=EBoolean True},
+    SatCase { satDescription="bound variable substitution",
+    inputVar="x",
+    inputSub=ENum 3,
+    inputExpr=Bound "x",
+    satExpected=ENum 3},
+    SatCase {satDescription="bound variable NO substitution",
+    inputVar="x",
+    inputSub=ENum 4,
+    inputExpr=Bound "z",
+    satExpected=Bound "z"},
+    SatCase {satDescription="bound variable embedded in binop",
+    inputVar="y",
+    inputSub=ENum 5,
+    inputExpr=ArithBinop Add (Bound "y") (ENum 6),
+    satExpected=ArithBinop Add (ENum 5) (ENum 6)}
     ]

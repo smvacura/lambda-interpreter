@@ -12,6 +12,8 @@ main = do
     let e = E.toString $ E.eval $ P.lmbdaParse x
     putStr e
 
+
+-- | 'prompt' displays @text@ and returns @IO userinput@
 prompt :: String -> IO String
 prompt text = do
     putStr text

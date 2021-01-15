@@ -83,33 +83,33 @@ lmbdaParse input = case parse (whitespace *> litExpr <* eof) "" input of
                      Left err -> EExn $ show err
                      Right expr -> expr 
 
-
-
-languageDef =
-   emptyDef { Token.identStart      = letter,
-              Token.identLetter     = letter,
-              Token.reservedNames   = [ "if",
-                                        "then",
-                                        "true",
-                                        "false",
-                                        "not",
-                                        "and",
-                                        "or",
-                                        "\\",
-                                        "."
-                                      ],
-              Token.reservedOpNames = ["+", "-", "*", "/", "=",
-                                       "<", ">", "and", "or", "not",
-                                       "&"
-                                      ]
+lexer :: Token.TokenParser ()
+lexer = Token.makeTokenParser languageDef
+    where languageDef =
+            emptyDef {  Token.identStart      = letter,
+                        Token.identLetter     = letter,
+                        Token.reservedNames   = [ "if",
+                                                    "then",
+                                                    "true",
+                                                    "false",
+                                                    "not",
+                                                    "and",
+                                                    "or",
+                                                    "\\",
+                                                    "."
+                                                ],
+                        Token.reservedOpNames = ["+", "-", "*", "/", "=",
+                                                "<", ">", "and", "or", "not",
+                                                "&"
+                                                ]
             }
 
-lexer = Token.makeTokenParser languageDef
 
 lidentifier = Token.identifier lexer
-
+lreserved :: String -> Parser ()
 lreserved = Token.reserved lexer
 
+lreservedOp :: String -> Parser ()
 lreservedOp = Token.reservedOp lexer
 
 ifExpr :: Parser Expr
