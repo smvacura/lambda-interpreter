@@ -25,7 +25,7 @@ prompt text = do
 -- | Carry out the "read" step of a REPL and return user input
 readREPL :: IO String
 readREPL = do
-    putStr "Lambda>"
+    putStr "Lambda> "
     hFlush stdout
     getLine
 

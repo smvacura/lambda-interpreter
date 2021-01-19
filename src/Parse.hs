@@ -10,8 +10,7 @@ import Text.Parsec.String
 import Text.Parsec.Expr
 import qualified Text.Parsec.Token as Token
 import Text.Parsec.Language
-import Data.Char
-import Control.Monad
+import Data.Functor.Identity
 
 
 data Expr = ENum Integer 
@@ -71,7 +70,10 @@ boolExpr = do
 
 litExpr :: Parser Expr
 litExpr =  try appExpr
+       <|> try (lparens appExpr)
+       <|> try (lparens lambdaExpr)
        <|> try lambdaExpr
+       <|> lparens ifExpr
        <|> ifExpr
        <|> arithOpExpr 
        <|> boolExpr 
@@ -105,7 +107,12 @@ lexer = Token.makeTokenParser languageDef
             }
 
 
+lidentifier :: ParsecT String () Identity String
 lidentifier = Token.identifier lexer
+
+lparens :: ParsecT String () Identity a -> ParsecT String () Identity a
+lparens = Token.parens lexer
+
 lreserved :: String -> Parser ()
 lreserved = Token.reserved lexer
 
@@ -133,15 +140,16 @@ lambdaExpr = do
 
 appExpr :: Parser Expr
 appExpr = do
-    e1 <- lambdaExpr
-    e2 <- litExpr
+    e1 <- lparens lambdaExpr <|> lambdaExpr
+    e2 <- lparens litExpr <|> litExpr
     return $ App e1 e2
 
 arithOpExpr :: Parser Expr
 arithOpExpr = buildExpressionParser arithOps arithTerm
 
 arithTerm :: Parser Expr
-arithTerm = numExpr
+arithTerm =  lparens litExpr
+         <|> numExpr
          <|> boolExpr
          <|> fmap Bound lidentifier
 
