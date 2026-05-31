@@ -4,7 +4,7 @@
 import Data.Foldable     (for_)
 import Data.String       (fromString)
 import Test.Hspec        (Spec, describe, it, shouldBe)
-import Test.Hspec.Runner (configFastFail, defaultConfig, hspecWith)
+import Test.Hspec.Runner (defaultConfig, hspecWith)
 
 import Parse (lmbdaParse, Expr(..), Oper(..))
 import Eval (eval, saturate)
@@ -12,9 +12,9 @@ import Eval (eval, saturate)
 
 main :: IO ()
 main = do 
-    hspecWith defaultConfig {configFastFail = False} parseSpecs
-    hspecWith defaultConfig {configFastFail = False} satSpecs
-    hspecWith defaultConfig {configFastFail = False} evalSpecs
+    hspecWith defaultConfig parseSpecs
+    hspecWith defaultConfig satSpecs
+    hspecWith defaultConfig evalSpecs
 
 
 parseSpecs :: Spec
