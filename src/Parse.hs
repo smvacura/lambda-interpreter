@@ -24,6 +24,7 @@ data Expr = ENum Integer
           | Lambda String Expr
           | Bound String
           | App Expr Expr
+          | Let String Expr Expr
     deriving (Eq, Show)
 
 data Oper = Add

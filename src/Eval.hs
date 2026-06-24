@@ -119,13 +119,9 @@ evalIf e1 e2 e3 = evalIf (eval e1) e2 e3
 --   * @e2@ evaluates to a literal
 evalApp :: Expr -> Expr -> Expr
 evalApp (Lambda v (App e1 e2)) e3 = evalApp (Lambda v (evalApp e1 e2)) e3
-evalApp lam@(Lambda v e1) e2 = 
-    let saturatedLambda = saturate v e2 lam in
-        case saturatedLambda of
-            Lambda v e3 -> if isSaturated e3 
-                           then eval e3 
-                           else e3
-            _ -> EExn "Fatal error: impossible condition"
+evalApp (Lambda v e1) e2 =
+    let e3 = saturate v e2 e1 in
+        if isSaturated e3 then eval e3 else e3
 evalApp e1 e2 = App e1 e2
 
 
@@ -142,8 +138,9 @@ constructTypeError op t1 t2 = "TypeError: at operator " ++ "`" ++ toStringOper o
 saturate :: String -> Expr -> Expr -> Expr
 saturate v sube (App e1 e2) = 
     App (saturate v sube e1) (saturate v sube e2)
-saturate v sube (Lambda v2 e) = 
-    Lambda v2 (saturate v sube e)
+saturate v sube (Lambda v2 e) 
+    | v == v2 = Lambda v2 e
+    | v /= v2 = Lambda v2 (saturate v sube e)
 saturate v sube (If e1 e2 e3) = 
     If (saturate v sube e1) (saturate v sube e2) (saturate v sube e3)
 saturate v sube (ArithBinop op e1 e2) = 
