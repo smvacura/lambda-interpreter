@@ -131,6 +131,23 @@ constructTypeError :: Oper -> String -> String -> String
 constructTypeError op t1 t2 = "TypeError: at operator " ++ "`" ++ toStringOper op ++ "`" ++ " expected " ++ t1 ++ " but got " ++ t2
 
 
+allNames :: Expr -> [String]
+allNames (ENum i) = []
+allNames (EBoolean b) = []
+allNames (Bound v) = [v]
+allNames (ArithBinop op e1 e2) = allNames e1 ++ allNames e2
+allNames (BoolBinop op e1 e2) = allNames e1 ++ allNames e2
+allNames (CompBinop op e1 e2) = allNames e1 ++ allNames e2
+allNames (If e1 e2 e3) = allNames e1 ++ allNames e2 ++ allNames e3
+allNames (App e1 e2) = allNames e1 ++ allNames e2
+allNames (Lambda v e) = v : allNames e
+
+
+fresh :: String -> [String] -> String 
+fresh v used
+    | v `notElem` used = v
+    | otherwise = fresh (v ++ "'") used
+
 -- | 'saturate' performs one "saturation" of a lambda expression
 -- 
 --  @saturate v sube expr@ is @expr@ with all instances of @Bound v@
@@ -140,6 +157,10 @@ saturate v sube (App e1 e2) =
     App (saturate v sube e1) (saturate v sube e2)
 saturate v sube (Lambda v2 e) 
     | v == v2 = Lambda v2 e
+    | v2 `elem` allNames sube = 
+        let v2' = fresh v2 (allNames sube ++ allNames e)
+            e' = saturate v2 (Bound v2') e in
+        Lambda v2' (saturate v sube e')
     | v /= v2 = Lambda v2 (saturate v sube e)
 saturate v sube (If e1 e2 e3) = 
     If (saturate v sube e1) (saturate v sube e2) (saturate v sube e3)

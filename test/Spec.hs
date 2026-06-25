@@ -156,7 +156,10 @@ evalCases = [
     expected=Lambda "x" (ArithBinop Add (Bound "x") (ENum 1))},
     ExprCase {description="double curried full-saturated lambda",
     input="\\x.\\y.x+y 1 2",
-    expected=ENum 3}
+    expected=ENum 3},
+    ExprCase {description="outer variable shadowed by inner lambda",
+    input="(\\x.\\x.x) 5",
+    expected=Lambda "x" (Bound "x")}
     ]
 
 
@@ -202,5 +205,10 @@ satCases = [
     inputVar="y",
     inputSub=ENum 5,
     inputExpr=ArithBinop Add (Bound "y") (ENum 6),
-    satExpected=ArithBinop Add (ENum 5) (ENum 6)}
+    satExpected=ArithBinop Add (ENum 5) (ENum 6)},
+    SatCase {satDescription="inner lambda shadows outer variable, no substitution",
+    inputVar="x",
+    inputSub=ENum 5,
+    inputExpr=Lambda "x" (Bound "x"),
+    satExpected=Lambda "x" (Bound "x")}
     ]
