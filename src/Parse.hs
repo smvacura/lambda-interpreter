@@ -70,7 +70,8 @@ boolExpr = do
 
 
 litExpr :: Parser Expr
-litExpr =  try appExpr
+litExpr =  letExpr 
+       <|> try appExpr
        <|> try (lparens appExpr)
        <|> try (lparens lambdaExpr)
        <|> try lambdaExpr
@@ -91,7 +92,10 @@ lexer = Token.makeTokenParser languageDef
     where languageDef =
             emptyDef {  Token.identStart      = letter,
                         Token.identLetter     = letter,
-                        Token.reservedNames   = [ "if",
+                        Token.reservedNames   = [ 
+                                                    "let",
+                                                    "in",
+                                                    "if",
                                                     "then",
                                                     "true",
                                                     "false",
@@ -119,6 +123,16 @@ lreserved = Token.reserved lexer
 
 lreservedOp :: String -> Parser ()
 lreservedOp = Token.reservedOp lexer
+
+letExpr :: Parser Expr
+letExpr = do
+    lreserved "let"
+    v <- lidentifier
+    lreservedOp "="
+    e1 <- litExpr
+    lreserved "in"
+    e2 <- litExpr
+    return $ Let v e1 e2
 
 ifExpr :: Parser Expr
 ifExpr = do

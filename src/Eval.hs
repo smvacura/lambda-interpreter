@@ -44,6 +44,7 @@ eval (If e1 e2 e3) = evalIf e1 e2 e3
 eval (Lambda v (App e1 e2)) = Lambda v (evalApp e1 e2)
 eval (Lambda v e) = Lambda v e
 eval (App e1 e2) = evalApp e1 e2
+eval (Let v e1 e2) = eval (saturate v (eval e1) e2)
 eval expr = expr
 
 
@@ -162,6 +163,9 @@ saturate v sube (Lambda v2 e)
             e' = saturate v2 (Bound v2') e in
         Lambda v2' (saturate v sube e')
     | v /= v2 = Lambda v2 (saturate v sube e)
+saturate v sube (Let v2 e1 e2)
+    | v == v2 = Let v2 (saturate v sube e1) e2
+    | v /= v2 = Let v2 (saturate v sube e1) (saturate v sube e2)
 saturate v sube (If e1 e2 e3) = 
     If (saturate v sube e1) (saturate v sube e2) (saturate v sube e3)
 saturate v sube (ArithBinop op e1 e2) = 
@@ -181,6 +185,7 @@ saturate v sube (Bound v2) = if v == v2 then sube else Bound v2
 isSaturated :: Expr -> Bool
 isSaturated (App e1 e2) = isSaturated e1 && isSaturated e2
 isSaturated (Lambda v e) = isSaturated e
+isSaturated (Let v e1 e2) = isSaturated e1 && isSaturated e2
 isSaturated (If e1 e2 e3) = isSaturated e1 && isSaturated e2 && isSaturated e3
 isSaturated (ArithBinop op e1 e2) = isSaturated e1 && isSaturated e2
 isSaturated (BoolBinop op e1 e2) = isSaturated e1 && isSaturated e2
