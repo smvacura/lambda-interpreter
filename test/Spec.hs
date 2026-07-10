@@ -33,7 +33,7 @@ data ExprCase = ExprCase { description :: String,
 parseCases :: [ExprCase]
 parseCases = [ ExprCase {description="empty string",
           input="",
-          expected=EExn "(line 1, column 1):\nunexpected end of input\nexpecting \"let\", \"(\", \"\\\\\", \"if\", digit, \"true\", \"false\" or identifier"},
+          expected=EExn "(line 1, column 1):\nunexpected end of input\nexpecting \"(\", \"\\\\\", \"let\", \"if\", digit, \"true\", \"false\" or identifier"},
           ExprCase {description="basic numeral",
           input="2",
           expected=ENum 2},

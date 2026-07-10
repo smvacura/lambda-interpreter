@@ -70,12 +70,10 @@ boolExpr = do
 
 
 litExpr :: Parser Expr
-litExpr =  letExpr 
-       <|> try appExpr
-       <|> try (lparens appExpr)
-       <|> try (lparens lambdaExpr)
+litExpr =  try appExpr
+       <|> try (lparens litExpr)
        <|> try lambdaExpr
-       <|> lparens ifExpr
+       <|> letExpr 
        <|> ifExpr
        <|> arithOpExpr 
        <|> boolExpr 
