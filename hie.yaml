@@ -1,11 +1,8 @@
 cradle:
-  multi:
-    - path: "./"
-      config:
-        cradle:
-          stack:
-            - path: "./src/TypeCheck.hs"
-            - path: "./src/Parse.hs"
-            - path: "./src/Eval.hs"
-            - path: "./test/Spec.hs"
-            - path: "./app/Main.hs"
+  cabal:
+    - path: "./src"
+      component: "lib:first-haskell"
+    - path: "./app"
+      component: "first-haskell-exe"
+    - path: "./test"
+      component: "first-haskell-test"
