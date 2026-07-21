@@ -25,7 +25,7 @@ data Expr = ENum Integer
           | Bound String
           | App Expr Expr
           | Let String Expr Expr
-    deriving (Eq, Show)
+    deriving (Eq, Show, Ord)
 
 data Oper = Add
            | Sub
@@ -42,7 +42,7 @@ data Oper = Add
            | LT
            | GET
            | LET
-    deriving (Eq, Show)
+    deriving (Eq, Show, Ord)
 
 safeBoolRead :: String -> Bool
 safeBoolRead "true" = True 
