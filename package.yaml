@@ -27,6 +27,11 @@ dependencies:
 
 library:
   source-dirs: src
+  exposed-modules:
+    - TypeCheck
+    - Parse
+    - Eval
+    - Infer
 
 executables:
   first-haskell-exe:
