@@ -12,24 +12,35 @@ import qualified GHC.List as List
 import Eval (toString)
 import Data.Char (chr)
 
+-- basic datatypes. funcs curry for arity > 1
 data Type = Var String
         | Int
         | Bool
         | Func Type Type
     deriving (Eq, Ord)
 
+-- a scheme for quantified types: \forall a, b. a -> b -> a will have:
+-- Scheme ["a", "b"] [...]
 data Scheme = Scheme [String] Type
 
+-- type substitutions: from strings to actual type variables
+type Subst = Map.Map String Type
+
+
+-- ftv gets the free variables in `a` (ie ones that aren't bound by quantifiers)
+-- apply takes a substitution and a type, and makes all substitutions found in it
 class Types a where
     ftv :: a -> Set.Set String
     apply :: Subst -> a -> a
 
 instance Types Type where
+
+    -- free type vars in a type are simply all types, since there is no quantification
     ftv (Var a) = Set.singleton a
     ftv Int = Set.empty
     ftv Bool = Set.empty
     ftv (Func a b) = Set.union (ftv a) (ftv b)
-
+    -- apply is simple here too 
     apply s (Var a) = fromMaybe (Var a) (Map.lookup a s)
     apply s (Func a b) = Func (apply s a) (apply s b)
     apply _ a = a
@@ -43,7 +54,7 @@ instance Types a => Types [a] where
     ftv [a] = List.foldr (Set.union . ftv) Set.empty [a]
     apply s [a] = List.map (apply s) [a]
 
-type Subst = Map.Map String Type
+
 
 emptySubst :: Subst
 emptySubst = Map.empty
