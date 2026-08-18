@@ -46,10 +46,13 @@ instance Types Type where
     apply _ a = a
 
 instance Types Scheme where
+    --everything in the scheme vars is bound
     ftv (Scheme vars a) = Set.difference (ftv a) (Set.fromList vars)
 
+    --just a basic fold, with deletion from the scheme
     apply s (Scheme vars a) = Scheme vars (apply (foldr Map.delete s vars) a)
 
+--just basic folds here
 instance Types a => Types [a] where
     ftv [a] = List.foldr (Set.union . ftv) Set.empty [a]
     apply s [a] = List.map (apply s) [a]
