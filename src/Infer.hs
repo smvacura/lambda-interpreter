@@ -58,7 +58,7 @@ instance Types a => Types [a] where
     apply s [a] = List.map (apply s) [a]
 
 
-
+--the degen case
 emptySubst :: Subst
 emptySubst = Map.empty
 
