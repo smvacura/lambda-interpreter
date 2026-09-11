@@ -77,6 +77,7 @@ generalize env t = Scheme (Set.toList $ Set.difference (ftv t) (ftv env)) t
 
 type TI a = ExceptT String (State Int) a
 
+-- instantiate an arbitrary free type letter
 indexToLetters :: Int -> String
 indexToLetters n
   | n < 0     = error "Index must be non-negative"
