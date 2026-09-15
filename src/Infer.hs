@@ -62,6 +62,7 @@ instance Types a => Types [a] where
 emptySubst :: Subst
 emptySubst = Map.empty
 
+--keeps track of the types of identifiers in scope
 newtype TypeEnv = TypeEnv (Map.Map String Scheme)
 
 remove :: TypeEnv -> String -> TypeEnv
