@@ -65,6 +65,7 @@ emptySubst = Map.empty
 --keeps track of the types of identifiers in scope
 newtype TypeEnv = TypeEnv (Map.Map String Scheme)
 
+-- remove an identifier from scope
 remove :: TypeEnv -> String -> TypeEnv
 remove (TypeEnv env) var = TypeEnv (Map.delete var env)
 
